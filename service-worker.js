@@ -1,8 +1,9 @@
 const CACHE_NAME = 'asteroids-tetris-v1';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/press-start-2p.woff2' // Añadimos la fuente local
+    './',                // Raíz relativa
+    './index.html',      // HTML principal
+    './press-start-2p.woff2', // Fuente
+    './icon.png'         // Ícono de la PWA
 ];
 
 self.addEventListener('install', event => {
