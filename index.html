@@ -2,13 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes"> <!-- Añadido -->
+    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- Añadido -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- Añadido -->
     <title>Asteroids Tetris</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json"> <!-- Corregida ruta -->
     <style>
         @font-face {
             font-family: 'Press Start 2P';
-            src: url('press-start-2p.woff2') format('woff2');
+            src: url('./press-start-2p.woff2') format('woff2'); /* Corregida ruta */
             font-weight: normal;
             font-style: normal;
         }
@@ -226,6 +229,26 @@
                 display: none;
             }
         }
+        /* Estilos para el aviso de instalación */
+        #install-prompt {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #00FF00;
+            padding: 10px;
+            color: #000;
+            font-family: 'Press Start 2P', monospace;
+            display: none;
+            z-index: 11; /* Sobre el ad-screen */
+        }
+        #install-button {
+            background: #306230;
+            color: #00FF00;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', monospace;
+        }
     </style>
 </head>
 <body>
@@ -261,6 +284,11 @@
         <div id="game-over">
             <h2>Game Over</h2>
             <button id="restart-btn">Jugar de nuevo</button>
+        </div>
+        <!-- Aviso de instalación añadido -->
+        <div id="install-prompt">
+            <p>¡Instala Asteroids Tetris!</p>
+            <button id="install-button">Instalar</button>
         </div>
     </div>
 
@@ -885,11 +913,29 @@
         document.addEventListener('touchmove', handleMoveJoystickMove, { passive: false });
         document.addEventListener('mouseup', handleMoveJoystickEnd);
         document.addEventListener('touchend', handleMoveJoystickEnd);
-    </script>
-    <script>
+
+        // Aviso de instalación con beforeinstallprompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-prompt').style.display = 'block';
+        });
+
+        document.getElementById('install-button').addEventListener('click', () => {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuario aceptó instalar');
+                }
+                document.getElementById('install-prompt').style.display = 'none';
+            });
+        });
+
+        // Service Worker (corregida ruta)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                navigator.serviceWorker.register('./service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registrado con éxito:', registration);
                     })
