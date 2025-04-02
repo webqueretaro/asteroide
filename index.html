@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes"> <!-- Añadido -->
-    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- Añadido -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- Añadido -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Asteroids Tetris</title>
-    <link rel="manifest" href="./manifest.json"> <!-- Corregida ruta -->
+    <link rel="manifest" href="./manifest.json">
     <style>
         @font-face {
             font-family: 'Press Start 2P';
-            src: url('./press-start-2p.woff2') format('woff2'); /* Corregida ruta */
+            src: url('./press-start-2p.woff2') format('woff2');
             font-weight: normal;
             font-style: normal;
         }
@@ -37,13 +37,15 @@
             position: relative;
         }
         #canvas {
-            width: 100%;
-            height: 70vh;
+            width: 100vw;
+            height: 100vh;
+            max-width: 480px;
+            max-height: 720px;
+            margin: 0 auto;
             background-image: linear-gradient(45deg, #306230 25%, transparent 25%, transparent 75%, #306230 75%, #306230), 
                              linear-gradient(45deg, #306230 25%, transparent 25%, transparent 75%, #306230 75%, #306230);
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
-            position: relative;
         }
         #info {
             position: absolute;
@@ -70,14 +72,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 360px;
+            width: 100%;
+            max-width: 480px;
         }
         .lower-controls {
             margin-top: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 360px;
+            width: 100%;
+            max-width: 480px;
             position: relative;
         }
         .left-controls, .right-controls {
@@ -213,6 +217,25 @@
             background-color: #00FF00;
             color: #306230;
         }
+        #install-prompt {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #00FF00;
+            padding: 10px;
+            color: #000;
+            font-family: 'Press Start 2P', monospace;
+            display: none;
+            z-index: 11;
+        }
+        #install-button {
+            background: #306230;
+            color: #00FF00;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', monospace;
+        }
         @media (orientation: portrait) {
             #game-container::before {
                 content: "Por favor, gira tu dispositivo a modo horizontal";
@@ -229,29 +252,13 @@
                 display: none;
             }
         }
-        /* Estilos para el aviso de instalación */
-        #install-prompt {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: #00FF00;
-            padding: 10px;
-            color: #000;
-            font-family: 'Press Start 2P', monospace;
-            display: none;
-            z-index: 11; /* Sobre el ad-screen */
-        }
-        #install-button {
-            background: #306230;
-            color: #00FF00;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-family: 'Press Start 2P', monospace;
-        }
     </style>
 </head>
 <body>
+    <div id="install-prompt">
+        <p>¡Instala Asteroids Tetris!</p>
+        <button id="install-button">Instalar</button>
+    </div>
     <div id="ad-screen">
         <div id="ad-animation">
             <span class="letter" id="x">x</span>
@@ -285,11 +292,6 @@
             <h2>Game Over</h2>
             <button id="restart-btn">Jugar de nuevo</button>
         </div>
-        <!-- Aviso de instalación añadido -->
-        <div id="install-prompt">
-            <p>¡Instala Asteroids Tetris!</p>
-            <button id="install-button">Instalar</button>
-        </div>
     </div>
 
     <script>
@@ -310,8 +312,27 @@
         const restartBtn = document.getElementById('restart-btn');
         const skipBtn = document.getElementById('skip-btn');
 
-        canvas.width = STAGE_WIDTH;
-        canvas.height = STAGE_HEIGHT;
+        // Ajustar canvas dinámicamente
+        const aspectRatio = STAGE_WIDTH / STAGE_HEIGHT;
+        function resizeCanvas() {
+            const maxWidth = window.innerWidth;
+            const maxHeight = window.innerHeight;
+            let newWidth = maxWidth;
+            let newHeight = newWidth / aspectRatio;
+            if (newHeight > maxHeight) {
+                newHeight = maxHeight;
+                newWidth = newHeight * aspectRatio;
+            }
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            canvas.style.width = `${newWidth}px`;
+            canvas.style.height = `${newHeight}px`;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let scaleX = canvas.width / STAGE_WIDTH;
+        let scaleY = canvas.height / STAGE_HEIGHT;
 
         let asteroids = [];
         let bullets = [];
@@ -339,12 +360,6 @@
         let rotateJoystickX = 0;
         let moveJoystickY = 0;
 
-        if (window.screen.orientation && "lock" in window.screen.orientation) {
-            window.screen.orientation.lock("landscape").catch(err => {
-                console.log("No se pudo bloquear la orientación: ", err);
-            });
-        }
-
         document.getElementById('ad-screen').style.display = 'flex';
         document.getElementById('game-container').style.visibility = 'hidden';
 
@@ -369,6 +384,30 @@
         const adTimeout = setTimeout(() => {
             if (document.getElementById('ad-screen').style.display !== 'none') {
                 hideAd();
+            }
+        }, 5000);
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-prompt').style.display = 'block';
+        });
+
+        document.getElementById('install-button').addEventListener('click', () => {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuario aceptó instalar');
+                    hideAd();
+                }
+                document.getElementById('install-prompt').style.display = 'none';
+            });
+        });
+
+        setTimeout(() => {
+            if (document.getElementById('install-prompt').style.display === 'block') {
+                document.getElementById('install-prompt').style.display = 'none';
             }
         }, 5000);
 
@@ -712,7 +751,9 @@
         }
 
         function draw() {
-            ctx.clearRect(0, 0, STAGE_WIDTH, STAGE_HEIGHT);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.scale(scaleX, scaleY);
 
             ctx.strokeStyle = '#00FF00';
             ctx.lineWidth = 2;
@@ -770,6 +811,7 @@
             ctx.fillStyle = '#00FF00';
             ctx.fillRect(20, 10, ship.health * 2, 5);
 
+            ctx.restore();
             updateInfo();
         }
 
@@ -914,25 +956,6 @@
         document.addEventListener('mouseup', handleMoveJoystickEnd);
         document.addEventListener('touchend', handleMoveJoystickEnd);
 
-        // Aviso de instalación con beforeinstallprompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-prompt').style.display = 'block';
-        });
-
-        document.getElementById('install-button').addEventListener('click', () => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('Usuario aceptó instalar');
-                }
-                document.getElementById('install-prompt').style.display = 'none';
-            });
-        });
-
-        // Service Worker (corregida ruta)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
