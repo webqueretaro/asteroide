@@ -1,9 +1,9 @@
-const CACHE_NAME = 'asteroids-tetris-v1';
+const CACHE_NAME = 'asteroids-tetris-v2'; // Cambia de v1 a v2
 const urlsToCache = [
-    './',                // Raíz relativa
-    './index.html',      // HTML principal
-    './press-start-2p.woff2', // Fuente
-    './icon.png'         // Ícono de la PWA
+    './',
+    './index.html',
+    './press-start-2p.woff2',
+    './icon.png'
 ];
 
 self.addEventListener('install', event => {
