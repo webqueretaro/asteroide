@@ -22,13 +22,14 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            height: 100vh;
             background-color: #306230;
             font-family: 'Press Start 2P', monospace;
             overflow: hidden;
         }
         #game-container {
             width: 100%;
-            height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -38,7 +39,7 @@
         }
         #canvas {
             width: 100%;
-            height: auto;
+            height: 100%;
             max-width: 480px;
             max-height: 720px;
             margin: 0 auto;
@@ -83,12 +84,12 @@
         #install-prompt { position: absolute; top: 20px; left: 20px; background: #00FF00; padding: 10px; color: #000; font-family: 'Press Start 2P', monospace; }
         #install-button, #skip-install { background: #306230; color: #00FF00; border: none; padding: 5px 10px; cursor: pointer; margin: 5px; }
         @media (orientation: landscape) {
-            #canvas { height: 100vh; width: auto; }
+            #canvas { height: 100%; width: auto; }
         }
     </style>
 </head>
 <body>
-    <div id="install-prompt" style="display: none;">
+    <div id="install-prompt">
         <p>¡Bienvenido a Asteroids Tetris! ¿Quieres instalarlo?</p>
         <button id="install-button">Instalar</button>
         <button id="skip-install">Jugar sin instalar</button>
@@ -147,7 +148,7 @@
 
         function resizeCanvas() {
             const maxWidth = window.innerWidth;
-            const maxHeight = window.innerHeight * 0.7;
+            const maxHeight = window.innerHeight;
             let newWidth = Math.min(maxWidth, 480);
             let newHeight = Math.min(maxHeight, 720);
             canvas.width = newWidth;
@@ -163,34 +164,36 @@
         let gameOver = false, score = 0, level = 0, gameLoop, spawnCounter = 0, spawnPhase = 0;
         let rotateJoystickActive = false, moveJoystickActive = false, rotateJoystickX = 0, moveJoystickY = 0;
 
+        document.getElementById('ad-screen').style.display = 'none';
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('install-prompt').style.display = 'block';
+
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            document.getElementById('install-prompt').style.display = 'block';
         });
 
         document.getElementById('install-button').addEventListener('click', () => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('Usuario aceptó instalar');
-                }
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó instalar');
+                    }
+                    document.getElementById('install-prompt').style.display = 'none';
+                    showAdScreen();
+                });
+            } else {
                 document.getElementById('install-prompt').style.display = 'none';
                 showAdScreen();
-            });
+            }
         });
 
         document.getElementById('skip-install').addEventListener('click', () => {
             document.getElementById('install-prompt').style.display = 'none';
             showAdScreen();
         });
-
-        setTimeout(() => {
-            if (document.getElementById('install-prompt').style.display !== 'block') {
-                showAdScreen();
-            }
-        }, 3000);
 
         function showAdScreen() {
             document.getElementById('ad-screen').style.display = 'flex';
