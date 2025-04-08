@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asteroids-tetris-v2'; // Cambia de v1 a v2
+const CACHE_NAME = 'asteroids-tetris-v3'; // Cambiamos a v3
 const urlsToCache = [
     './',
     './index.html',
@@ -9,24 +9,14 @@ const urlsToCache = [
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Cache abierto');
-                return cache.addAll(urlsToCache);
-            })
+            .then(cache => cache.addAll(urlsToCache))
     );
 });
 
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
-            .then(response => {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request).catch(() => {
-                    console.log('No hay conexión y el recurso no está en caché');
-                });
-            })
+            .then(response => response || fetch(event.request))
     );
 });
 
