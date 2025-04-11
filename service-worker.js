@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asteroids-tetris-v6';
+const CACHE_NAME = 'asteroids-tetris-v7';
 const urlsToCache = [
     './',
     './index.html',
