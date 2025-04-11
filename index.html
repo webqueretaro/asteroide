@@ -74,14 +74,13 @@
         #game-over { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(48, 98, 48, 0.8); color: #00FF00; padding: 20px; text-align: center; font-size: 24px; }
         #game-over button { background-color: #306230; color: #00FF00; border: none; padding: 10px; cursor: pointer; font-size: 18px; }
         #install-prompt { position: absolute; top: 20px; left: 20px; background: #00FF00; padding: 10px; color: #000; font-family: 'Press Start 2P', monospace; text-align: center; }
-        #skip-install { background: #306230; color: #00FF00; border: none; padding: 5px 10px; cursor: pointer; margin: 5px; }
+        #install-button, #skip-install { background: #306230; color: #00FF00; border: none; padding: 5px 10px; cursor: pointer; margin: 5px; }
         @media (orientation: landscape) {
             #canvas { height: 100%; width: auto; }
         }
     </style>
 </head>
 <body>
-    <!-- Versión v6 -->
     <div id="install-prompt">
         <p>¡Bienvenido a Asteroids Tetris! Toca "Jugar" para empezar.</p>
         <button id="skip-install">Jugar</button>
@@ -114,8 +113,6 @@
     </div>
 
     <script>
-        // Versión v6
-        const VERSION = 'v6'; // Forzar cambio en contenido
         const STAGE_WIDTH = 480;
         const STAGE_HEIGHT = 720;
 
@@ -153,11 +150,31 @@
         document.getElementById('game-container').style.display = 'none';
         document.getElementById('install-prompt').style.display = 'block';
 
+        // Debug para "Jugar"
         skipInstallBtn.addEventListener('click', () => {
-            alert('Botón Jugar tocado - v6'); // Debug con versión
+            alert('Botón Jugar tocado - v7'); // Verifica si el evento se dispara
+            console.log('Iniciando juego...'); // Para ver en la consola del navegador
             document.getElementById('install-prompt').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
-            startGame();
+            try {
+                startGame();
+                alert('startGame ejecutado - v7'); // Confirma si llega aquí
+            } catch (e) {
+                alert('Error en startGame: ' + e.message); // Muestra errores
+            }
+        });
+
+        skipInstallBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            alert('Touchstart en Jugar - v7'); // Para móviles
+            document.getElementById('install-prompt').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+            try {
+                startGame();
+                alert('startGame ejecutado (touch) - v7');
+            } catch (e) {
+                alert('Error en startGame (touch): ' + e.message);
+            }
         });
 
         function generatePolygon(size, sides = 8) {
