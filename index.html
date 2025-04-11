@@ -90,7 +90,8 @@
 </head>
 <body>
     <div id="install-prompt">
-        <p>¡Bienvenido a Asteroids Tetris! Toca "Jugar" para empezar.</p>
+        <p>¡Bienvenido a Asteroids Tetris! Toca "Instalar" para añadirlo a tu pantalla. Si no funciona, usa los tres puntos > "Agregar a la pantalla". O juega directo.</p>
+        <button id="install-button">Instalar</button>
         <button id="skip-install">Jugar</button>
     </div>
     <div id="ad-screen" style="display: none;">
@@ -166,6 +167,29 @@
         document.getElementById('ad-screen').style.display = 'none';
         document.getElementById('game-container').style.display = 'none';
         document.getElementById('install-prompt').style.display = 'block';
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        document.getElementById('install-button').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó instalar');
+                    }
+                    document.getElementById('install-prompt').style.display = 'none';
+                    showAdScreen();
+                });
+            } else {
+                alert('Instalación automática no disponible. Usa los tres puntos > "Agregar a la pantalla".');
+                document.getElementById('install-prompt').style.display = 'none';
+                showAdScreen();
+            }
+        });
 
         document.getElementById('skip-install').addEventListener('click', () => {
             document.getElementById('install-prompt').style.display = 'none';
